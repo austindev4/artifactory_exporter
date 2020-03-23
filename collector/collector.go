@@ -201,10 +201,7 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
 	// Fetch System stats
 	var licenseType string
 	license, err := e.fetchLicense()
-    	fmt.Println("checkpoint8 ", e)
-	var birds []Bird
-	json.Unmarshal([]byte(e), &birds)
-	fmt.Printf("Birds : %+v", birds)
+    	fmt.Println("checkpoint8 ", e.fetchLicense())
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Can't scrape Artifactory when fetching system/license", "err", err)
 		return 0
