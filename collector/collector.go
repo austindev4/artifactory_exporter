@@ -142,39 +142,47 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (e *Exporter) fetchHTTP(uri string, path string, cred config.Credentials, authMethod string, sslVerify bool, timeout time.Duration) ([]byte, error) {
-	fullPath := fmt.Sprintf("%s/api/%s", uri, path)
-	tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !sslVerify}}
-	client := http.Client{
-		Timeout:   timeout,
-		Transport: tr,
-	}
-	level.Debug(e.logger).Log("msg", "Fetching http", "path", fullPath)
-	req, err := http.NewRequest("GET", fullPath, nil)
-	if err != nil {
-		return nil, err
-	}
-	if authMethod == "userPass" {
-		req.SetBasicAuth(cred.Username, cred.Password)
-	} else if authMethod == "accessToken" {
-		req.Header.Add("Authorization", "Bearer "+cred.AccessToken)
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
-		return nil, fmt.Errorf("HTTP status %d", resp.StatusCode)
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return bodyBytes, nil
-
+    fmt.Println("Uri: ", uri)
+    fmt.Println("path: ", path)
+    fmt.Println("cred: ", cred)
+    fmt.Println("authMethod: ", authMethod)
+    fmt.Println("sslVerify: ", sslVerify)
+    fmt.Println("timeout: ", timeout)
+    
+    fullPath := fmt.Sprintf("%s/api/%s", uri, path)
+    tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !sslVerify}}
+    client := http.Client{
+        Timeout:   timeout,
+        Transport: tr,
+    }
+    level.Debug(e.logger).Log("msg", "Fetching http", "path", fullPath)
+    req, err := http.NewRequest("GET", fullPath, nil)
+    if err != nil {
+        fmt.Println("Error in getting ", fullPath)
+        return nil, err
+    }
+    if authMethod == "userPass" {
+        req.SetBasicAuth(cred.Username, cred.Password)
+    } else if authMethod == "accessToken" {
+        req.Header.Add("Authorization", "Bearer "+cred.AccessToken)
+    }
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+ 
+    if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+        return nil, fmt.Errorf("HTTP status %d", resp.StatusCode)
+    }
+ 
+    bodyBytes, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return nil, err
+    }
+ 
+    return bodyBytes, nil
+ 
 }
 
 func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
