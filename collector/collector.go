@@ -148,6 +148,7 @@ func (e *Exporter) fetchHTTP(uri string, path string, cred config.Credentials, a
     fmt.Println("authMethod: ", authMethod)
     fmt.Println("sslVerify: ", sslVerify)
     fmt.Println("timeout: ", timeout)
+    fmt.Println("checkpoint1 ", timeout)
     
     fullPath := fmt.Sprintf("%s/api/%s", uri, path)
     tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: !sslVerify}}
@@ -155,17 +156,24 @@ func (e *Exporter) fetchHTTP(uri string, path string, cred config.Credentials, a
         Timeout:   timeout,
         Transport: tr,
     }
+    fmt.Println("checkpoint2 ", timeout)
+
     level.Debug(e.logger).Log("msg", "Fetching http", "path", fullPath)
     req, err := http.NewRequest("GET", fullPath, nil)
+    fmt.Println("checkpoint3 ", timeout)
     if err != nil {
         fmt.Println("Error in getting ", fullPath)
         return nil, err
     }
+    fmt.Println("checkpoint4 ", timeout)
+
     if authMethod == "userPass" {
         req.SetBasicAuth(cred.Username, cred.Password)
     } else if authMethod == "accessToken" {
         req.Header.Add("Authorization", "Bearer "+cred.AccessToken)
     }
+    fmt.Println("checkpoint5 ", timeout)
+
     resp, err := client.Do(req)
     if err != nil {
         return nil, err
@@ -173,11 +181,13 @@ func (e *Exporter) fetchHTTP(uri string, path string, cred config.Credentials, a
     defer resp.Body.Close()
  
     if !(resp.StatusCode >= 200 && resp.StatusCode < 300) {
+    	fmt.Println("checkpoint6 ", timeout)
         return nil, fmt.Errorf("HTTP status %d", resp.StatusCode)
     }
  
     bodyBytes, err := ioutil.ReadAll(resp.Body)
     if err != nil {
+    	fmt.Println("checkpoint7 ", timeout)
         return nil, err
     }
  
@@ -191,6 +201,7 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) (up float64) {
 	// Fetch System stats
 	var licenseType string
 	license, err := e.fetchLicense()
+    	fmt.Println("checkpoint8 ", e)
 	if err != nil {
 		level.Error(e.logger).Log("msg", "Can't scrape Artifactory when fetching system/license", "err", err)
 		return 0
